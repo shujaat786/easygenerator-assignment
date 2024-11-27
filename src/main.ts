@@ -1,15 +1,23 @@
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
+import {NestFactory} from '@nestjs/core';
+import {AppModule} from './app.module';
+import {Logger, ValidationPipe} from "@nestjs/common";
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+    const app = await NestFactory.create(AppModule, {
+        logger: ['log', 'error', 'warn', 'debug', 'verbose'],
+    });
 
-  // Enable CORS for requests from the frontend (port 3000)
-  app.enableCors({
-    origin: 'http://localhost:3000', // Allow only the React app origin
-    credentials: true, // Include credentials if needed (e.g., cookies)
-  });
 
-  await app.listen(4000); // Backend runs on port 4000
+    app.enableCors({
+        origin: 'http://localhost:3000',
+        credentials: true,
+    });
+
+    app.useGlobalPipes(new ValidationPipe());
+    await app.listen(4000);
+    // Log startup info
+    const logger = new Logger('Bootstrap');
+    logger.log(`Application is running on: ${await app.getUrl()}`);
 }
+
 bootstrap();
